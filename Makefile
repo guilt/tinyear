@@ -1,26 +1,39 @@
 PYTHON ?= python3
 .DEFAULT_GOAL := help
-.PHONY: help install test tests examples fixtures clean
+.PHONY: help install test tests unit-tests coverage examples fixtures corpus clean format lint
 
 help: ## Show this help
 	@$(PYTHON) -c "import re; f=open('Makefile').read(); [print('  {:<24s} {}'.format(*m.groups())) for m in re.finditer(r'^([a-z_-]+):.*?## (.+)', f, re.M)]"
 
-install:
+install: ## Editable install with dev extras
 	$(PYTHON) -m pip install -e ".[dev]"
 
-fixtures:
-	$(PYTHON) examples/make_sample.py
+fixtures: ## Write examples/sample.wav
+	PYTHONPATH=. $(PYTHON) examples/make_sample.py
+
+corpus: ## Offline 6-vowel + silence corpus
+	PYTHONPATH=. $(PYTHON) examples/make_corpus.py
 
 test: tests
 
-tests: fixtures
-	$(PYTHON) -m pytest --cov-branch --cov=tinyear --cov-report=term-missing --cov-report=html tinyear/tests
+tests: fixtures ## Pytest with branch coverage
+	PYTHONPATH=. $(PYTHON) -m pytest --cov-branch --cov=tinyear --cov-report=term-missing --cov-report=html tinyear/tests
 
-examples: fixtures
+unit-tests: tests ## Alias
+
+coverage: tests ## Alias
+
+examples: fixtures corpus ## Ingest sample + corpus
 	mkdir -p examples/out
-	$(PYTHON) -m tinyear ingest examples/sample.wav --out examples/out --transcript "set a timer"
-	$(PYTHON) -m tinyear ingest examples/sample.wav --out examples/out --stem silent
-	@grep -H transcript_ok examples/out/*.ear.md
+	PYTHONPATH=. $(PYTHON) -m tinyear ingest examples/sample.wav --out examples/out --transcript "set a timer"
+	PYTHONPATH=. $(PYTHON) -m tinyear ingest examples/sample.wav --out examples/out --stem silent
+	@grep -H transcript_ok examples/out/*.ear.md examples/out/corpus/*.ear.md || true
 
-clean:
+format: ## Ruff format
+	-$(PYTHON) -m ruff format tinyear examples
+
+lint: format
+	-$(PYTHON) -m ruff check tinyear
+
+clean: ## Remove artifacts
 	rm -rf dist build *.egg-info .pytest_cache .coverage htmlcov examples/out examples/sample.wav
