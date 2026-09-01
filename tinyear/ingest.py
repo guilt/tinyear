@@ -52,6 +52,21 @@ def write_ear_pair(out_dir, stem, wav_src, transcript="", transcript_ok=None, so
     return dest_wav, md
 
 
-def ingest_wav(wav_path, out_dir, transcript="", stem=None):
+def ingest_wav(wav_path, out_dir, transcript="", stem=None, source="desktop"):
     wav_path = Path(wav_path)
-    return write_ear_pair(out_dir, stem or wav_path.stem, wav_path, transcript=transcript)
+    return write_ear_pair(
+        out_dir,
+        stem or wav_path.stem,
+        wav_path,
+        transcript=transcript,
+        source=source,
+    )
+
+
+def ingest_bytes(blob: bytes, out_dir, stem: str, transcript="", source="pipe"):
+    """Ingest a WAV blob (stdin / process pipe). Writes the pair to disk."""
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    dest = out_dir / f"{stem}.ear.wav"
+    dest.write_bytes(blob)
+    return write_ear_pair(out_dir, stem, dest, transcript=transcript, source=source)

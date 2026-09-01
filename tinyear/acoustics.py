@@ -7,8 +7,10 @@ import wave
 from pathlib import Path
 
 
-def read_pcm16(path: Path) -> tuple[int, list[int]]:
-    with wave.open(str(path), "rb") as w:
+def read_pcm16_bytes(blob: bytes) -> tuple[int, list[int]]:
+    import io
+
+    with wave.open(io.BytesIO(blob), "rb") as w:
         rate = w.getframerate()
         n = w.getnframes()
         width = w.getsampwidth()
@@ -17,6 +19,10 @@ def read_pcm16(path: Path) -> tuple[int, list[int]]:
         return rate, []
     samples = list(struct.unpack("<" + "h" * (len(raw) // 2), raw))
     return rate, samples
+
+
+def read_pcm16(path: Path) -> tuple[int, list[int]]:
+    return read_pcm16_bytes(Path(path).read_bytes())
 
 
 def energy(samples: list[int]) -> float:
