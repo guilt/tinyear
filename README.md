@@ -18,3 +18,18 @@ Tests use a generated 16 kHz formant tone so they run offline.
 
 Optional real speech: `python scripts/fetch_speech.py` prints how to pull
 LibriSpeech dev-clean from OpenSLR. TinyEar will not caption it for you.
+
+## Howl pipe (test dep)
+
+TinyHowl is a **test** dependency, not a runtime one. Ear stays complete without a mouth.
+
+```bash
+# sibling checkout
+TINYHOWL_ROOT=../tinyhowl make tests
+make pipe
+# or by hand:
+tinyhowl say:mama - | tinyear ingest - --out memory/ --stem mama
+```
+
+The pipe test measures accuracy (valid WAV, baby-band F0, honest miss vs supplied transcript)
+and wall latency of two real processes. No cloud ASR.

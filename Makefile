@@ -1,6 +1,8 @@
 PYTHON ?= python3
+TINYHOWL ?= ../tinyhowl
+export TINYHOWL_ROOT := $(TINYHOWL)
 .DEFAULT_GOAL := help
-.PHONY: help install test tests unit-tests coverage examples fixtures corpus clean format lint
+.PHONY: help install test tests unit-tests coverage examples fixtures corpus pipe clean format lint
 
 help: ## Show this help
 	@$(PYTHON) -c "import re; f=open('Makefile').read(); [print('  {:<24s} {}'.format(*m.groups())) for m in re.finditer(r'^([a-z_-]+):.*?## (.+)', f, re.M)]"
@@ -16,8 +18,8 @@ corpus: ## Offline 6-vowel + silence corpus
 
 test: tests
 
-tests: fixtures ## Pytest with branch coverage
-	PYTHONPATH=. $(PYTHON) -m pytest --cov-branch --cov=tinyear --cov-report=term-missing --cov-report=html tinyear/tests
+tests: fixtures ## Pytest with branch coverage (Howl is a test dep)
+	PYTHONPATH=$(TINYHOWL):. TINYHOWL_ROOT=$(TINYHOWL) $(PYTHON) -m pytest --cov-branch --cov=tinyear --cov-report=term-missing --cov-report=html tinyear/tests
 
 unit-tests: tests ## Alias
 
@@ -28,6 +30,9 @@ examples: fixtures corpus ## Ingest sample + corpus
 	PYTHONPATH=. $(PYTHON) -m tinyear ingest examples/sample.wav --out examples/out --transcript "set a timer"
 	PYTHONPATH=. $(PYTHON) -m tinyear ingest examples/sample.wav --out examples/out --stem silent
 	@grep -H transcript_ok examples/out/*.ear.md examples/out/corpus/*.ear.md || true
+
+pipe: ## Howl stdout → Ear stdin (needs sibling ../tinyhowl)
+	PYTHONPATH=$(TINYHOWL):. TINYHOWL_ROOT=$(TINYHOWL) $(PYTHON) examples/howl_pipe.py
 
 format: ## Ruff format
 	-$(PYTHON) -m ruff format tinyear examples

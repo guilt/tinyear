@@ -45,12 +45,35 @@ def test_silence_not_voiced(tmp_path: Path):
     assert voiced(samples, rate) is False
 
 
-def test_cli(tmp_path, monkeypatch):
+def test_cli(tmp_path):
     from tinyear.__main__ import main
 
     wav = write_tone_wav(tmp_path / "s.wav", seconds=0.3)
-    monkeypatch.setattr(
-        "sys.argv",
-        ["tinyear", "ingest", str(wav), "--out", str(tmp_path / "o"), "--transcript", "hi"],
+    assert main(["ingest", str(wav), "--out", str(tmp_path / "o"), "--transcript", "hi"]) == 0
+
+
+def test_ingest_bytes_and_stdin_cli(tmp_path):
+    import os
+    import subprocess
+    import sys
+
+    from tinyear.ingest import ingest_bytes
+
+    wav = write_tone_wav(tmp_path / "s.wav", seconds=0.3)
+    blob = wav.read_bytes()
+    dest, md = ingest_bytes(blob, tmp_path / "b", "pipe")
+    assert dest.exists() and "transcript_ok: false" in md.read_text(encoding="utf-8")
+
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(Path(__file__).resolve().parents[2]) + os.pathsep + env.get("PYTHONPATH", "")
+    proc = subprocess.run(
+        [sys.executable, "-m", "tinyear", "ingest", "-", "--out", str(tmp_path / "s"), "--stem", "stdin"],
+        input=blob,
+        env=env,
+        cwd=str(Path(__file__).resolve().parents[2]),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=15,
     )
-    assert main() == 0
+    assert proc.returncode == 0, proc.stderr.decode("utf-8", "replace")
+    assert (tmp_path / "s" / "stdin.ear.md").exists()
