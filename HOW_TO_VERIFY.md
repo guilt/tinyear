@@ -1,7 +1,9 @@
 # HOW_TO_VERIFY — TinyEar
 
 ```bash
-python -m pip install -e ".[dev]"
+python -m pip install -e ".[dev]"   # pulls tinyhowl from git+https @bananey
+# offline alternative (no git clone of Howl):
+#   TINYHOWL_ROOT=../tinyhowl PYTHONPATH=../tinyhowl:. make tests
 make tests
 make examples
 grep transcript_ok examples/out/*.ear.md examples/out/corpus/*.ear.md
@@ -16,10 +18,11 @@ Expect:
 
 ## Howl → Ear process pipe
 
-Needs a sibling `../tinyhowl` checkout (or `TINYHOWL_ROOT`).
+Needs Howl from one of: `pip install -e ".[howl]"`, a sibling `../tinyhowl`,
+or `TINYHOWL_ROOT`.
 
 ```bash
-TINYHOWL_ROOT=../tinyhowl PYTHONPATH=../tinyhowl:. python -m pytest tinyear/tests/test_howl_pipe.py -q -s
+python -m pytest tinyear/tests/test_howl_pipe.py -q -s
 make pipe
 tinyhowl coo - | tinyear ingest - --out /tmp/ear --stem coo
 ```

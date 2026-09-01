@@ -1,0 +1,20 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+# Ear has no runtime deps. A missing mouth is an honest miss, not an import error.
+
+[dev-packages]
+pytest = ">=7.0"
+pytest-cov = "*"
+coverage = "*"
+ruff = ">=0.5.6"
+build = "*"
+# Test-only mouth for the Howl→Ear process pipe.
+# After PyPI: tinyhowl = ">=0.1.2"
+tinyhowl = {git = "https://github.com/guilt/tinyhowl.git", ref = "bananey"}
+
+[requires]
+python_version = "3.9"
