@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+Makefile.user
+examples/out/
+memory/
+*.log
+.DS_Store

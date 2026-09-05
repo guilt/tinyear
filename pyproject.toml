@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tinyear"
+version = "0.1.2"
+description = "Optional ears for Tiny. Short clip + sidecar markdown. Honest when words fail."
+readme = "README.md"
+requires-python = ">=3.9"
+license = {file = "LICENSE.md"}
+dependencies = []
+
+[project.optional-dependencies]
+# Howl is a *test* dep (process pipe), not runtime. Ear stays complete without a mouth.
+# git+https on bananey until the package lands on PyPI; then swap to "tinyhowl>=0.1.2".
+howl = [
+    "tinyhowl @ git+https://github.com/guilt/tinyhowl.git@bananey",
+]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov",
+    "coverage",
+    "ruff>=0.5.6",
+    "tinyhowl @ git+https://github.com/guilt/tinyhowl.git@bananey",
+]
+
+[project.scripts]
+tinyear = "tinyear.__main__:main"
+
+[project.urls]
+Homepage = "https://github.com/guilt/tinyear"
+Repository = "https://github.com/guilt/tinyear"
+
+[tool.setuptools.packages.find]
+include = ["tinyear*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tinyear/tests"]
+
+[tool.coverage.run]
+branch = true
+source = ["tinyear"]
+omit = ["tinyear/tests/*", "tinyear/__main__.py"]
+
+[tool.coverage.report]
+precision = 2
+show_missing = true
+fail_under = 80.0
